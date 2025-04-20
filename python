@@ -18,8 +18,8 @@ from pyspark.sql.functions import col
 #secret_2 =
 
 Spark and mounting drives and things
-markets data dir=f"abfss://{secret_1}@onelake.dfs.fabric.microsoft.com/{secret_2)}/Files/Retrieved Market Data"        
-working dir="/lakehouse/default/Files/Market Data Files/City of Chicago"
+markets_data_dir=f"abfss://{secret_1}@onelake.dfs.fabric.microsoft.com/{secret_2)}/Files/Retrieved Market Data"        
+working_dir="/lakehouse/default/Files/Market Data Files/City of Chicago"
 mssparkutils.fs.mount(market_data_dir, working_dir)
 
 #Excel data path:
