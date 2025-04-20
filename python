@@ -144,3 +144,21 @@ filtered_df = join_df[join_df[['min_rate', 'max_rate']].isna().all(axis=1)]
 value_counts = filtered_df['GRD'].value_counts()
 # Print the value counts
 print(value_counts)
+
+
+# Group by 'SCH' and 'GRD', and aggregate by counting 'TITLE'
+filtered_df_.groupby(['SCH', 'GRD']).agg({'TITLE': 'count'})
+
+
+
+# Create Spark session
+spark = SparkSession.builder.getOrCreate()
+# Convert pandas DataFrame to Spark DataFrame
+df = spark.createDataFrame(join_df)
+# Clean column names to remove spaces and special characters
+df = df.toDF(*(c.replace(' ', '_')
+                .lower()
+                for c in df.columns))
+
+df
+
