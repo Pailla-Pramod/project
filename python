@@ -1,1 +1,146 @@
 
+#imports needed
+import numpy as np
+import os
+import pandas as pd
+import glob
+import re
+import pandas as pd 
+from openpyxl import load_workbook
+from notebookutils import mssparkutils
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import col
+
+#keys to load data
+#secret_1 =
+#secret_2 =
+
+Spark and mounting drives and things
+markets data dir=f"abfss://{secret_1}@onelake.dfs.fabric.microsoft.com/{secret_2)}/Files/Retrieved Market Data"        
+working dir="/lakehouse/default/Files/Market Data Files/City of Chicago"
+mssparkutils.fs.mount(market_data_dir, working_dir)
+
+#Excel data path:
+file path = f"{working dir}/Alphabetical List of Class Titles (80 127).xlsx
+file path 2= f"{working dir)}/Municipal Pay Schedules & Grades (pg 128 - End).xlsx"
+
+
+import pandas as pd
+
+# Load the Excel file
+excel_file = pd. ExcelFile(file_path) # <-- Replace with your file name/path
+sheet_names = excel_file.sheet_names
+
+# Read and concatenate all sheets into one DataFrame
+df_class_titles = pd.concat( [excel_file.parse(sheet) for sheet in sheet_names],ignore_index=True)
+df_class_titles = df_class_titles[['TITLE CODE', 'SCH', 'GRD', 'SYM', 'TITLE']]
+df_class_titles['SCH'] = df_class_titles['SCH'].str.strip().str.upper()
+# df_class_titles['GRD'] = df_class_titles['GRD'].str.strip()  # (this line is commented in your image)
+df_class_titles['GRD'] = df_class_titles['GRD'].astype(str)
+df_class_titles['GRD'] = df_class_titles['GRD'].apply(
+    lambda x: x[1:].upper() if isinstance(x, str) and x.startswith('0') else 
+              x.upper() if isinstance(x, str) else x
+)
+
+
+#string Strip
+df_class_titles['SCH'] = df_class_titles['SCH'].str.strip()
+df_class_titles['GRD'] df_class_titles['GRD'].str.strip()
+
+df_class_ titles. isnull.sum() 
+
+df_class_titles['GRD'].unique() 
+
+
+import pandas as pd
+
+def read_municipal_payschedule(file_path, num_columns=4):
+    """
+    Read an Excel file and return a DataFrame with only the specified number of columns.
+
+    Parameters:
+    ----------
+    file_path : str
+        Path to the Excel file
+    num_columns : int, default=4
+        Number of columns to read from the Excel file
+
+    Returns:
+    -------
+    pandas.DataFrame
+        DataFrame containing only the specified number of columns
+    """
+    # Read the Excel file
+    df = pd.read_excel(file_path, sheet_name='Table 1')
+    
+    # Strip column names of any leading/trailing spaces
+    df.columns = df.columns.str.strip()
+    
+    # Get the last 'num_columns' columns
+    last_4_cols = df.columns[-4:]
+    
+    # Define required columns
+    required_cols = ['GRD', 'SCH', 'min_rate', 'max_rate']
+    
+    # Select only required columns from last_cols
+    selected_cols = [col for col in last_4_cols if col in required_cols]
+    
+    # Create a new DataFrame with selected columns
+    df_selected = df[selected_cols]
+   
+    # Drop rows where all selected columns are NaN
+    df_selected = df_selected.dropna() 
+    return df_selected
+# Example usage:
+pay_df = read_municipal_payschedule('file_path_2')  # Replace 'file_path.xlsx' with your actual file path
+
+
+#datatypes
+pay_df.dtypes
+
+
+pay_df['GRD']=pay_df['GRD'].astype(str) 
+
+
+pay_df[(pay_df['SCH']=='G') &(pay_df['GRD']==6) ]
+
+
+
+def left_join_dataframes(df1, df2, on_columns):
+    """
+    Perform a left join on two DataFrames based on specified columns.
+    Matching should be case-insensitive for the 'GRD' column.
+    
+    Parameters:
+    ----------
+    df1 : pandas.DataFrame
+        Left DataFrame
+    df2 : pandas.DataFrame
+        Right DataFrame
+    on_columns : list
+        List of columns to join on
+
+    Returns:
+    -------
+    pandas.DataFrame
+        Merged DataFrame after performing left join
+    """
+    merged_df = df1.merge(df2, on=on_columns, how='left')
+    return merged_df
+
+# Example usage:
+join_df = left_join_dataframes(df_class_titles, pay_df, on_columns=['SCH', 'GRD'])
+
+join_df
+
+join_df.isnull(). sum() 
+
+join_df[join_df['GRD'] =='SR\09']
+
+
+# Filter rows where both 'min_rate' and 'max_rate' are NaN
+filtered_df = join_df[join_df[['min_rate', 'max_rate']].isna().all(axis=1)]
+# Get value counts of the 'GRD' column in the filtered DataFrame
+value_counts = filtered_df['GRD'].value_counts()
+# Print the value counts
+print(value_counts)
