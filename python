@@ -162,3 +162,12 @@ df = df.toDF(*(c.replace(' ', '_')
 
 df
 
+# Drop the table if it already exists
+spark.sql("DROP TABLE IF EXISTS dbo.chicago_municipal_pay_schedules")
+
+# Write DataFrame to SQL database in the dbo schema
+df.write \
+  .format("delta") \
+  .mode("overwrite") \
+  .saveAsTable("dbo.chicago_municipal_pay_schedules")
+
